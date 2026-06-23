@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/formatters";
-import { useAuth } from "@/store/auth-context";
+import { useCart } from "@/store/cart-context";
 import type { MenuItem } from "@/types/food-order";
 
 type MenuCardProps = {
@@ -14,7 +14,7 @@ type MenuCardProps = {
 };
 
 export function MenuCard({ item }: MenuCardProps) {
-  const { addItem, items } = useAuth();
+  const { addItem, items } = useCart();
   const quantityInCart =
     items.find((cartItem) => cartItem.id === item.id)?.quantity ?? 0;
 

@@ -15,14 +15,14 @@ import {
 } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/store/auth-context";
+import { useCart } from "@/store/cart-context";
 
 type CartSummaryProps = {
   className?: string;
 };
 
 export function CartSummary({ className }: CartSummaryProps) {
-  const { itemCount, totalAmount } = useAuth();
+  const { itemCount, totalAmount } = useCart();
   const deliveryLabel = itemCount > 0 ? "Free" : formatCurrency(0);
 
   return (

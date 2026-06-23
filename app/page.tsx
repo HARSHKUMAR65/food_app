@@ -1,28 +1,25 @@
-import { headers } from "next/headers";
 import { PageShell } from "@/components/layout/page-shell";
 import { MenuList } from "@/components/menu/menu-list";
 import { RestaurantSummary } from "@/components/menu/restaurant-summary";
 import { Notice } from "@/components/ui/notice";
+import { getAvailableMenuItems } from "@/lib/services/menu.service";
 import type { MenuItem } from "@/types/food-order";
+import type { MenuItemRecord } from "@/types/models";
 
 export const dynamic = "force-dynamic";
 
 async function getMenuItems(): Promise<MenuItem[]> {
-  const requestHeaders = await headers();
-  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+  const menuItems = await getAvailableMenuItems();
 
-  if (!host) {
-    throw new Error("Unable to determine request host");
-  }
-  const protocol = requestHeaders.get("x-forwarded-proto") ?? "http";
-  const response = await fetch(`${protocol}://${host}/api/menu`, {
-    cache: "no-store",
-  });
-  if (!response.ok) {
-    throw new Error("Failed to fetch menu");
-  }
+  return menuItems.map(toMenuItem);
+}
 
-  return (await response.json()) as MenuItem[];
+function toMenuItem(item: MenuItemRecord): MenuItem {
+  return {
+    ...item,
+    createdAt: item.createdAt.toISOString(),
+    updatedAt: item.updatedAt.toISOString(),
+  };
 }
 
 export default async function Home() {

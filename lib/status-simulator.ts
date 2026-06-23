@@ -1,56 +1,72 @@
-import { getOrderById, updateOrderStatus } from "@/lib/services/order.service";
-import type { OrderStatusInput } from "@/types/order";
+import type { OrderStatus } from "@/types/food-order";
+import type { OrderWithItems } from "@/types/order";
 
-const statusTransitions = [
+const statusTimeline = [
   {
-    delayMs: 10_000,
+    elapsedMs: 0,
+    status: "ORDER_RECEIVED",
+  },
+  {
+    elapsedMs: 10_000,
     status: "PREPARING",
   },
   {
-    delayMs: 20_000,
+    elapsedMs: 20_000,
     status: "OUT_FOR_DELIVERY",
   },
   {
-    delayMs: 30_000,
+    elapsedMs: 30_000,
     status: "DELIVERED",
   },
 ] satisfies readonly {
-  delayMs: number;
-  status: OrderStatusInput;
+  elapsedMs: number;
+  status: Exclude<OrderStatus, "CANCELLED">;
 }[];
 
-const scheduledOrderIds = new Set<string>();
+const statusRank: Record<OrderStatus, number> = {
+  ORDER_RECEIVED: 0,
+  PREPARING: 1,
+  OUT_FOR_DELIVERY: 2,
+  DELIVERED: 3,
+  CANCELLED: 4,
+};
 
-export function simulateOrderStatus(orderId: string): void {
-  if (scheduledOrderIds.has(orderId)) {
-    return;
-  }
+export function getElapsedOrderStatus(
+  createdAt: Date | string,
+  now: Date = new Date(),
+): Exclude<OrderStatus, "CANCELLED"> {
+  const createdAtTime =
+    createdAt instanceof Date ? createdAt.getTime() : new Date(createdAt).getTime();
+  const elapsedMs = Math.max(0, now.getTime() - createdAtTime);
 
-  scheduledOrderIds.add(orderId);
-
-  statusTransitions.forEach(({ delayMs, status }) => {
-    setTimeout(() => {
-      void updateStatusIfOrderIsActive(orderId, status);
-      if (status === "DELIVERED") {
-        scheduledOrderIds.delete(orderId);
-      }
-    }, delayMs);
-  });
+  return statusTimeline.reduce<Exclude<OrderStatus, "CANCELLED">>(
+    (currentStatus, timelineEntry) =>
+      elapsedMs >= timelineEntry.elapsedMs ? timelineEntry.status : currentStatus,
+    "ORDER_RECEIVED",
+  );
 }
 
-async function updateStatusIfOrderIsActive(
-  orderId: string,
-  status: OrderStatusInput,
-): Promise<void> {
-  try {
-    const order = await getOrderById(orderId);
-
-    if (!order || order.status === "CANCELLED" || order.status === "DELIVERED") {
-      return;
-    }
-
-    await updateOrderStatus(orderId, status);
-  } catch (error: unknown) {
-    console.error(`Failed to simulate status ${status} for order ${orderId}`, error);
+export function resolveOrderStatus(
+  order: Pick<OrderWithItems, "createdAt" | "status">,
+  now: Date = new Date(),
+): OrderStatus {
+  if (order.status === "CANCELLED") {
+    return "CANCELLED";
   }
+
+  const elapsedStatus = getElapsedOrderStatus(order.createdAt, now);
+
+  return statusRank[order.status] > statusRank[elapsedStatus]
+    ? order.status
+    : elapsedStatus;
+}
+
+export function withResolvedOrderStatus<T extends OrderWithItems>(
+  order: T,
+  now: Date = new Date(),
+): T {
+  return {
+    ...order,
+    status: resolveOrderStatus(order, now),
+  };
 }

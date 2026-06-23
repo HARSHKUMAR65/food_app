@@ -17,5 +17,4 @@ export type CartState = {
   increaseQuantity: (id: string) => void;
   decreaseQuantity: (id: string) => void;
   clearCart: () => void;
-  getTotalAmount: () => number;
 };

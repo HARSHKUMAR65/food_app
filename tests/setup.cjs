@@ -5,6 +5,9 @@ const Module = require("node:module");
 const path = require("node:path");
 const ts = require("typescript");
 
+process.env.NODE_ENV ??= "test";
+process.env.USE_DEMO_DATA ??= "true";
+
 const rootDir = path.resolve(__dirname, "..");
 const originalResolveFilename = Module._resolveFilename;
 

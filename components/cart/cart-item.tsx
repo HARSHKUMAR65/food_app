@@ -5,7 +5,7 @@ import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/formatters";
-import { useAuth } from "@/store/auth-context";
+import { useCart } from "@/store/cart-context";
 import type { CartItem as CartStoreItem } from "@/types/cart";
 
 type CartItemProps = {
@@ -13,7 +13,7 @@ type CartItemProps = {
 };
 
 export function CartItem({ item }: CartItemProps) {
-  const { decreaseQuantity, increaseQuantity, removeItem } = useAuth();
+  const { decreaseQuantity, increaseQuantity, removeItem } = useCart();
 
   return (
     <div className="grid gap-4 rounded-lg border bg-card p-4 shadow-[var(--shadow-card)] sm:grid-cols-[120px_minmax(0,1fr)_auto]">

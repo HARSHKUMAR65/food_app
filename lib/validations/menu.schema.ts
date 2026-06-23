@@ -19,6 +19,7 @@ export const createMenuItemSchema = z.object({
   image: z
     .string()
     .trim()
+    .url("Menu item image must be a valid URL")
     .min(1, "Menu item image is required")
     .max(2_000, "Menu item image URL is too long"),
   isAvailable: z.boolean().optional().default(true),

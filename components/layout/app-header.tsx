@@ -5,10 +5,10 @@ import { ShoppingCart, UtensilsCrossed } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/store/auth-context";
+import { useCart } from "@/store/cart-context";
 
 export function AppHeader() {
-  const { itemCount } = useAuth();
+  const { itemCount } = useCart();
 
   return (
     <header className="sticky top-0 z-50 border-b bg-card/95 shadow-[0_1px_0_oklch(0.88_0.025_77)] backdrop-blur">

@@ -11,6 +11,9 @@ import { formatCurrency } from "@/lib/formatters";
 import { readResponseError } from "@/lib/http";
 import type { Order } from "@/types/food-order";
 
+const terminalOrderStatuses = new Set<Order["status"]>(["DELIVERED", "CANCELLED"]);
+const maxConsecutiveFetchErrors = 5;
+
 export default function OrderDetailsPage() {
   const params = useParams<{ id: string }>();
   const orderId = params.id;
@@ -20,6 +23,18 @@ export default function OrderDetailsPage() {
 
   React.useEffect(() => {
     let isMounted = true;
+    let shouldPoll = true;
+    let consecutiveFetchErrors = 0;
+    const intervalId = window.setInterval(() => {
+      if (shouldPoll) {
+        void fetchOrder();
+      }
+    }, 3_000);
+
+    function stopPolling() {
+      shouldPoll = false;
+      window.clearInterval(intervalId);
+    }
 
     async function fetchOrder() {
       if (!orderId) {
@@ -42,10 +57,21 @@ export default function OrderDetailsPage() {
         if (isMounted) {
           setOrder(nextOrder);
           setError(null);
+          consecutiveFetchErrors = 0;
+        }
+
+        if (terminalOrderStatuses.has(nextOrder.status)) {
+          stopPolling();
         }
       } catch (fetchError: unknown) {
         if (isMounted) {
           setError(fetchError instanceof Error ? fetchError.message : "Failed to load order");
+        }
+
+        consecutiveFetchErrors += 1;
+
+        if (consecutiveFetchErrors >= maxConsecutiveFetchErrors) {
+          stopPolling();
         }
       } finally {
         if (isMounted) {
@@ -56,13 +82,9 @@ export default function OrderDetailsPage() {
 
     void fetchOrder();
 
-    const intervalId = window.setInterval(() => {
-      void fetchOrder();
-    }, 3_000);
-
     return () => {
       isMounted = false;
-      window.clearInterval(intervalId);
+      stopPolling();
     };
   }, [orderId]);
 
@@ -90,7 +112,7 @@ export default function OrderDetailsPage() {
             <CardHeader>
               <CardTitle>Order confirmed</CardTitle>
               <CardDescription>
-                We are updating this page automatically every few seconds.
+                We are updating this page automatically while the order is active.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
