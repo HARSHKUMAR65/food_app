@@ -9,7 +9,7 @@ import type { CreateMenuItemInput, CreateMenuItemsInput } from "@/types/menu";
 
 export async function getAvailableMenuItems() {
   try {
-    const prisma = getPrismaClient();
+    const prisma = await getPrismaClient();
     const menuItems = await prisma.menuItem.findMany({
       where: {
         isAvailable: true,
@@ -35,7 +35,7 @@ export async function getAvailableMenuItems() {
 
 export async function createMenuItem(data: CreateMenuItemInput) {
   try {
-    const prisma = getPrismaClient();
+    const prisma = await getPrismaClient();
     return await prisma.menuItem.create({
       data: toMenuItemCreateData(data),
     });
@@ -50,7 +50,7 @@ export async function createMenuItem(data: CreateMenuItemInput) {
 
 export async function createMenuItems(data: CreateMenuItemsInput) {
   try {
-    const prisma = getPrismaClient();
+    const prisma = await getPrismaClient();
     return await prisma.$transaction((tx) =>
       Promise.all(
         data.map((item) =>

@@ -1,4 +1,3 @@
-import type { Prisma } from "@/app/generated/prisma/client";
 import {
   createDemoOrder,
   getDemoOrderById,
@@ -15,7 +14,7 @@ const orderWithItemsInclude = {
       menuItem: true,
     },
   },
-} satisfies Prisma.OrderInclude;
+};
 
 export async function createOrder(data: CreateOrderInput): Promise<OrderWithItems> {
   try {
@@ -43,7 +42,7 @@ export async function createOrder(data: CreateOrderInput): Promise<OrderWithItem
 }
 
 async function createDatabaseOrder(data: CreateOrderInput): Promise<OrderWithItems> {
-  const prisma = getPrismaClient();
+  const prisma = await getPrismaClient();
   const order = await prisma.$transaction(async (tx) => {
     const uniqueMenuItemIds = [...new Set(data.items.map((item) => item.menuItemId))];
 
@@ -113,7 +112,7 @@ async function startStatusSimulation(orderId: string): Promise<void> {
 
 export async function getOrderById(id: string): Promise<OrderWithItems | null> {
   try {
-    const prisma = getPrismaClient();
+    const prisma = await getPrismaClient();
     const order = await prisma.order.findUnique({
       where: {
         id,
@@ -136,7 +135,7 @@ export async function updateOrderStatus(
   status: OrderStatusInput,
 ): Promise<OrderWithItems | null> {
   try {
-    const prisma = getPrismaClient();
+    const prisma = await getPrismaClient();
     const existingOrder = await prisma.order.findUnique({
       where: {
         id,

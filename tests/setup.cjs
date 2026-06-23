@@ -9,14 +9,6 @@ const rootDir = path.resolve(__dirname, "..");
 const originalResolveFilename = Module._resolveFilename;
 
 Module._resolveFilename = function resolveAlias(request, parent, isMain, options) {
-  if (
-    request === "@/app/generated/prisma/client" ||
-    request.endsWith("/app/generated/prisma/client") ||
-    request.endsWith("/app/generated/prisma/client.ts")
-  ) {
-    return path.join(rootDir, "tests/prisma-client-stub.cjs");
-  }
-
   if (request.startsWith("@/")) {
     return originalResolveFilename.call(
       this,

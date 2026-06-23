@@ -1,9 +1,9 @@
-import type { MenuItem } from "@/app/generated/prisma/client";
 import type { CreateMenuItemInput, CreateMenuItemsInput } from "@/types/menu";
+import type { MenuItemRecord } from "@/types/models";
 
 const seedDate = new Date("2026-01-01T00:00:00.000Z");
 
-const initialDemoMenuItems: MenuItem[] = [
+const initialDemoMenuItems: MenuItemRecord[] = [
   {
     id: "demo-truffle-pizza",
     name: "Truffle Mushroom Pizza",
@@ -73,30 +73,30 @@ const initialDemoMenuItems: MenuItem[] = [
 ];
 
 const globalForDemoMenu = globalThis as unknown as {
-  demoMenuItems?: MenuItem[];
+  demoMenuItems?: MenuItemRecord[];
 };
 
-function getDemoMenuStore(): MenuItem[] {
+function getDemoMenuStore(): MenuItemRecord[] {
   globalForDemoMenu.demoMenuItems ??= [...initialDemoMenuItems];
   return globalForDemoMenu.demoMenuItems;
 }
 
-export function getDemoMenuItems(): MenuItem[] {
+export function getDemoMenuItems(): MenuItemRecord[] {
   return getDemoMenuStore()
     .filter((item) => item.isAvailable)
     .sort((first, second) => second.createdAt.getTime() - first.createdAt.getTime());
 }
 
-export function findDemoMenuItems(ids: string[]): MenuItem[] {
+export function findDemoMenuItems(ids: string[]): MenuItemRecord[] {
   const requestedIds = new Set(ids);
   return getDemoMenuStore().filter(
     (item) => requestedIds.has(item.id) && item.isAvailable,
   );
 }
 
-export function createDemoMenuItem(data: CreateMenuItemInput): MenuItem {
+export function createDemoMenuItem(data: CreateMenuItemInput): MenuItemRecord {
   const createdAt = new Date();
-  const item: MenuItem = {
+  const item: MenuItemRecord = {
     id: `demo-${createdAt.getTime()}-${data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
     name: data.name,
     description: data.description,
@@ -111,6 +111,6 @@ export function createDemoMenuItem(data: CreateMenuItemInput): MenuItem {
   return item;
 }
 
-export function createDemoMenuItems(data: CreateMenuItemsInput): MenuItem[] {
+export function createDemoMenuItems(data: CreateMenuItemsInput): MenuItemRecord[] {
   return data.map((item) => createDemoMenuItem(item));
 }
