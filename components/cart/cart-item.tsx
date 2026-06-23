@@ -5,7 +5,7 @@ import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/formatters";
-import { useCartStore } from "@/store/cart-store";
+import { useAuth } from "@/store/auth-context";
 import type { CartItem as CartStoreItem } from "@/types/cart";
 
 type CartItemProps = {
@@ -13,9 +13,7 @@ type CartItemProps = {
 };
 
 export function CartItem({ item }: CartItemProps) {
-  const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
-  const increaseQuantity = useCartStore((state) => state.increaseQuantity);
-  const removeItem = useCartStore((state) => state.removeItem);
+  const { decreaseQuantity, increaseQuantity, removeItem } = useAuth();
 
   return (
     <div className="grid gap-4 rounded-lg border bg-card p-4 shadow-[var(--shadow-card)] sm:grid-cols-[120px_minmax(0,1fr)_auto]">

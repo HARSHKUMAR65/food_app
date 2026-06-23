@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 
 require("./setup.cjs");
-
 const assert = require("node:assert/strict");
 const test = require("node:test");
-
 const { GET: getOrder } = require("../app/api/orders/[id]/route.ts");
 const { POST: postOrder } = require("../app/api/orders/route.ts");
 const { PATCH: patchStatus } = require("../app/api/orders/[id]/status/route.ts");
@@ -39,7 +37,6 @@ test("order creation route returns validation issues for bad payloads", async ()
     }),
   );
   const payload = await readJson(response);
-
   assert.equal(response.status, 400);
   assert.equal(payload.error, "Invalid order payload");
   assert.ok(payload.issues.fieldErrors.customerName);

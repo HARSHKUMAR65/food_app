@@ -15,17 +15,14 @@ import {
 } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
-import { useCartStore } from "@/store/cart-store";
+import { useAuth } from "@/store/auth-context";
 
 type CartSummaryProps = {
   className?: string;
 };
 
 export function CartSummary({ className }: CartSummaryProps) {
-  const itemCount = useCartStore((state) =>
-    state.items.reduce((total, item) => total + item.quantity, 0),
-  );
-  const totalAmount = useCartStore((state) => state.getTotalAmount());
+  const { itemCount, totalAmount } = useAuth();
   const deliveryLabel = itemCount > 0 ? "Free" : formatCurrency(0);
 
   return (

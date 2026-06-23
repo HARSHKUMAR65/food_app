@@ -8,13 +8,10 @@ import { OrderFlowShell } from "@/components/layout/order-flow-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { useCartStore } from "@/store/cart-store";
+import { useAuth } from "@/store/auth-context";
 
 export default function CartPage() {
-  const items = useCartStore((state) => state.items);
-  const itemCount = useCartStore((state) =>
-    state.items.reduce((total, item) => total + item.quantity, 0),
-  );
+  const { itemCount, items } = useAuth();
 
   return (
     <OrderFlowShell

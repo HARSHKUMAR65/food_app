@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Notice } from "@/components/ui/notice";
 import { Textarea } from "@/components/ui/textarea";
 import { readResponseError } from "@/lib/http";
-import { useCartStore } from "@/store/cart-store";
+import { useAuth } from "@/store/auth-context";
 import type { Order } from "@/types/food-order";
 import type { CreateOrderInput } from "@/types/order";
 
@@ -23,8 +23,7 @@ type CheckoutFormValues = Pick<
 
 export function CheckoutForm() {
   const router = useRouter();
-  const cartItems = useCartStore((state) => state.items);
-  const clearCart = useCartStore((state) => state.clearCart);
+  const { clearCart, items: cartItems } = useAuth();
   const [submitError, setSubmitError] = React.useState<string | null>(null);
 
   const {

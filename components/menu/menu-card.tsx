@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/formatters";
-import { useCartStore } from "@/store/cart-store";
+import { useAuth } from "@/store/auth-context";
 import type { MenuItem } from "@/types/food-order";
 
 type MenuCardProps = {
@@ -14,10 +14,9 @@ type MenuCardProps = {
 };
 
 export function MenuCard({ item }: MenuCardProps) {
-  const addItem = useCartStore((state) => state.addItem);
-  const quantityInCart = useCartStore(
-    (state) => state.items.find((cartItem) => cartItem.id === item.id)?.quantity ?? 0,
-  );
+  const { addItem, items } = useAuth();
+  const quantityInCart =
+    items.find((cartItem) => cartItem.id === item.id)?.quantity ?? 0;
 
   return (
     <article className="group flex min-h-full flex-col overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)] transition-transform hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)]">
