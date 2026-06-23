@@ -7,8 +7,11 @@ import * as React from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { Notice } from "@/components/ui/notice";
 import { Textarea } from "@/components/ui/textarea";
+import { readResponseError } from "@/lib/http";
 import { useCartStore } from "@/store/cart-store";
 import type { Order } from "@/types/food-order";
 import type { CreateOrderInput } from "@/types/order";
@@ -17,28 +20,6 @@ type CheckoutFormValues = Pick<
   CreateOrderInput,
   "customerName" | "customerPhone" | "customerAddress"
 >;
-
-function getErrorMessage(payload: unknown, fallback: string): string {
-  if (
-    typeof payload === "object" &&
-    payload !== null &&
-    "error" in payload &&
-    typeof payload.error === "string"
-  ) {
-    return payload.error;
-  }
-
-  return fallback;
-}
-
-async function readResponseError(response: Response): Promise<string> {
-  try {
-    const payload: unknown = await response.json();
-    return getErrorMessage(payload, "Failed to place order");
-  } catch {
-    return "Failed to place order";
-  }
-}
 
 export function CheckoutForm() {
   const router = useRouter();
@@ -86,7 +67,7 @@ export function CheckoutForm() {
     });
 
     if (!response.ok) {
-      setSubmitError(await readResponseError(response));
+      setSubmitError(await readResponseError(response, "Failed to place order"));
       return;
     }
 
@@ -98,28 +79,28 @@ export function CheckoutForm() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="flex flex-col items-center rounded-xl border border-dashed p-10 text-center">
-        <ShoppingCart className="mb-4 size-12 text-muted-foreground" />
-        <h2 className="text-xl font-semibold">Your cart is empty</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Add at least one menu item before checkout.
-        </p>
-        <Button asChild className="mt-6">
-          <Link href="/">Back to menu</Link>
-        </Button>
-      </div>
+      <EmptyState
+        action={
+          <Button asChild>
+            <Link href="/">Back to menu</Link>
+          </Button>
+        }
+        description="Add at least one menu item before checkout."
+        icon={ShoppingCart}
+        title="Your cart is empty"
+      />
     );
   }
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-      <div className="mb-2 flex items-center gap-2 rounded-lg bg-gray-50 p-3 text-sm text-muted-foreground">
+    <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+      <div className="flex items-center gap-2 rounded-lg bg-secondary p-3 text-sm text-secondary-foreground">
         <MapPin className="size-4" />
         <span>We will use these details to deliver your order.</span>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="customerName">
+        <label className="text-sm font-semibold" htmlFor="customerName">
           Customer name
         </label>
         <Input
@@ -139,7 +120,7 @@ export function CheckoutForm() {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="customerPhone">
+        <label className="text-sm font-semibold" htmlFor="customerPhone">
           Phone
         </label>
         <Input
@@ -161,7 +142,7 @@ export function CheckoutForm() {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="customerAddress">
+        <label className="text-sm font-semibold" htmlFor="customerAddress">
           Address
         </label>
         <Textarea
@@ -180,9 +161,9 @@ export function CheckoutForm() {
         ) : null}
       </div>
 
-      {submitError ? <p className="text-sm text-destructive">{submitError}</p> : null}
+      {submitError ? <Notice variant="error">{submitError}</Notice> : null}
 
-      <Button className="h-11 w-full text-base" disabled={isSubmitting} type="submit">
+      <Button className="w-full" disabled={isSubmitting} size="lg" type="submit">
         {isSubmitting ? "Placing order..." : "Place order"}
       </Button>
     </form>

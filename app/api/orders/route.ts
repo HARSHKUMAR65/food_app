@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
+import { jsonError, jsonOk } from "@/lib/api/responses";
 import { createOrder, MenuItemUnavailableError } from "@/lib/services/order.service";
 import { createOrderSchema } from "@/lib/validations/order.schema";
 
@@ -9,38 +10,26 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { error: "Invalid JSON request body" },
-      { status: 400 },
-    );
+    return jsonError("Invalid JSON request body", 400);
   }
 
   const parsedBody = createOrderSchema.safeParse(body);
 
   if (!parsedBody.success) {
-    return NextResponse.json(
-      {
-        error: "Invalid order payload",
-        issues: parsedBody.error.flatten(),
-      },
-      { status: 400 },
-    );
+    return jsonError("Invalid order payload", 400, parsedBody.error.flatten());
   }
 
   try {
     const order = await createOrder(parsedBody.data);
 
-    return NextResponse.json(order, { status: 201 });
+    return jsonOk(order, 201);
   } catch (error: unknown) {
     if (error instanceof MenuItemUnavailableError) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return jsonError(error.message, 400);
     }
 
     console.error("Failed to create order", error);
 
-    return NextResponse.json(
-      { error: "Failed to create order" },
-      { status: 500 },
-    );
+    return jsonError("Failed to create order", 500);
   }
 }

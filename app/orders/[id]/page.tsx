@@ -5,31 +5,11 @@ import * as React from "react";
 
 import { OrderFlowShell } from "@/components/layout/order-flow-shell";
 import { OrderStatusTracker } from "@/components/orders/order-status-tracker";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Notice } from "@/components/ui/notice";
 import { formatCurrency } from "@/lib/formatters";
+import { readResponseError } from "@/lib/http";
 import type { Order } from "@/types/food-order";
-
-function getErrorMessage(payload: unknown, fallback: string): string {
-  if (
-    typeof payload === "object" &&
-    payload !== null &&
-    "error" in payload &&
-    typeof payload.error === "string"
-  ) {
-    return payload.error;
-  }
-
-  return fallback;
-}
-
-async function readResponseError(response: Response): Promise<string> {
-  try {
-    const payload: unknown = await response.json();
-    return getErrorMessage(payload, "Failed to load order");
-  } catch {
-    return "Failed to load order";
-  }
-}
 
 export default function OrderDetailsPage() {
   const params = useParams<{ id: string }>();
@@ -54,7 +34,7 @@ export default function OrderDetailsPage() {
         });
 
         if (!response.ok) {
-          throw new Error(await readResponseError(response));
+          throw new Error(await readResponseError(response, "Failed to load order"));
         }
 
         const nextOrder = (await response.json()) as Order;
@@ -94,23 +74,28 @@ export default function OrderDetailsPage() {
       eyebrow="Step 3 of 3"
       title="Order success"
     >
-      {isLoading ? <p className="text-muted-foreground">Loading order...</p> : null}
+      {isLoading ? (
+        <Notice className="mx-auto w-full max-w-2xl">Loading order details...</Notice>
+      ) : null}
 
       {error ? (
-        <div className="w-full rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+        <Notice className="mx-auto w-full max-w-2xl" variant="error">
           {error}
-        </div>
+        </Notice>
       ) : null}
 
       {order ? (
-        <div className="grid w-full gap-6">
+        <div className="mx-auto grid w-full max-w-3xl gap-6">
           <Card className="text-center">
             <CardHeader>
-              <CardTitle className="text-xl">Order confirmed</CardTitle>
+              <CardTitle>Order confirmed</CardTitle>
+              <CardDescription>
+                We are updating this page automatically every few seconds.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               <OrderStatusTracker status={order.status} />
-              <div className="space-y-2 rounded-lg bg-gray-50 p-4 text-left text-sm">
+              <div className="space-y-3 rounded-lg border bg-background/70 p-4 text-left text-sm">
                 <div className="flex justify-between gap-4">
                   <span className="text-muted-foreground">Order ID</span>
                   <span className="max-w-44 truncate font-medium">{order.id}</span>
@@ -138,6 +123,7 @@ export default function OrderDetailsPage() {
           <Card className="text-left">
             <CardHeader>
               <CardTitle>Items</CardTitle>
+              <CardDescription>Final bill for this order.</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="divide-y">

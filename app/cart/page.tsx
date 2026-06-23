@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
-
 import { CartItem } from "@/components/cart/cart-item";
 import { CartSummary } from "@/components/cart/cart-summary";
 import { OrderFlowShell } from "@/components/layout/order-flow-shell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useCartStore } from "@/store/cart-store";
 
 export default function CartPage() {
@@ -30,18 +30,18 @@ export default function CartPage() {
             <CardHeader className="flex flex-row items-center justify-between gap-4">
               <div>
                 <CardTitle>Cart items</CardTitle>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <CardDescription>
                   {itemCount} {itemCount === 1 ? "item" : "items"} selected
-                </p>
+                </CardDescription>
               </div>
               <Button asChild variant="outline">
                 <Link href="/">Add more</Link>
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-            {items.map((item) => (
-              <CartItem key={item.id} item={item} />
-            ))}
+              {items.map((item) => (
+                <CartItem key={item.id} item={item} />
+              ))}
             </CardContent>
           </Card>
 
@@ -50,19 +50,16 @@ export default function CartPage() {
           </aside>
         </div>
       ) : (
-        <Card>
-          <CardContent className="flex flex-col items-center p-12 text-center">
-            <ShoppingCart className="mb-4 size-14 text-muted-foreground" />
-            <h2 className="text-2xl font-semibold">Your cart is empty</h2>
-            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-              Add items from the menu before checkout. Your selected food will appear
-              here.
-            </p>
-            <Button asChild className="mt-6">
+        <EmptyState
+          action={
+            <Button asChild>
               <Link href="/">Browse Menu</Link>
             </Button>
-          </CardContent>
-        </Card>
+          }
+          description="Add items from the menu before checkout. Your selected food will appear here."
+          icon={ShoppingCart}
+          title="Your cart is empty"
+        />
       )}
     </OrderFlowShell>
   );

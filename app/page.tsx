@@ -1,7 +1,12 @@
 import { headers } from "next/headers";
+import { PageShell } from "@/components/layout/page-shell";
 import { MenuList } from "@/components/menu/menu-list";
+import { RestaurantSummary } from "@/components/menu/restaurant-summary";
+import { Notice } from "@/components/ui/notice";
 import type { MenuItem } from "@/types/food-order";
+
 export const dynamic = "force-dynamic";
+
 async function getMenuItems(): Promise<MenuItem[]> {
   const requestHeaders = await headers();
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
@@ -32,21 +37,18 @@ export default async function Home() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 sm:px-6 lg:px-8">
-      <header>
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Food ordering</p>
-          <h1 className="text-3xl font-bold tracking-tight">Menu</h1>
-        </div>
-      </header>
+    <PageShell
+      description="Choose from chef-curated meals, add them to your cart, and track your delivery from kitchen to doorstep."
+      eyebrow="Food delivery"
+      title="Order fresh food"
+    >
+      <RestaurantSummary />
 
       {errorMessage ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-          {errorMessage}
-        </div>
+        <Notice variant="error">{errorMessage}</Notice>
       ) : (
         <MenuList items={menuItems} />
       )}
-    </div>
+    </PageShell>
   );
 }

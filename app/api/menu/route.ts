@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
+import { jsonError, jsonOk } from "@/lib/api/responses";
 import {
   createMenuItem,
   createMenuItems,
@@ -11,14 +12,11 @@ export async function GET() {
   try {
     const menuItems = await getAvailableMenuItems();
 
-    return NextResponse.json(menuItems, { status: 200 });
+    return jsonOk(menuItems);
   } catch (error: unknown) {
     console.error("Failed to fetch menu items", error);
 
-    return NextResponse.json(
-      { error: "Failed to fetch menu items" },
-      { status: 500 },
-    );
+    return jsonError("Failed to fetch menu items", 500);
   }
 }
 
@@ -28,46 +26,34 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { error: "Invalid JSON request body" },
-      { status: 400 },
-    );
+    return jsonError("Invalid JSON request body", 400);
   }
 
   const parsedBody = createMenuItemRequestSchema.safeParse(body);
 
   if (!parsedBody.success) {
-    return NextResponse.json(
-      {
-        error: "Invalid menu item payload",
-        issues: parsedBody.error.flatten(),
-      },
-      { status: 400 },
-    );
+    return jsonError("Invalid menu item payload", 400, parsedBody.error.flatten());
   }
 
   try {
     if (parsedBody.data.type === "single") {
       const menuItem = await createMenuItem(parsedBody.data.item);
 
-      return NextResponse.json(menuItem, { status: 201 });
+      return jsonOk(menuItem, 201);
     }
 
     const menuItems = await createMenuItems(parsedBody.data.items);
 
-    return NextResponse.json(
+    return jsonOk(
       {
         count: menuItems.length,
         items: menuItems,
       },
-      { status: 201 },
+      201,
     );
   } catch (error: unknown) {
     console.error("Failed to create menu item", error);
 
-    return NextResponse.json(
-      { error: "Failed to create menu item" },
-      { status: 500 },
-    );
+    return jsonError("Failed to create menu item", 500);
   }
 }

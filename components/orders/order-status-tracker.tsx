@@ -7,32 +7,67 @@ type OrderStatusTrackerProps = {
   status: OrderStatus;
 };
 
-const statusBadgeClasses: Record<OrderStatus, string> = {
-  ORDER_RECEIVED: "bg-blue-600 text-white hover:bg-blue-600",
-  PREPARING: "bg-yellow-400 text-yellow-950 hover:bg-yellow-400",
-  OUT_FOR_DELIVERY: "bg-orange-500 text-white hover:bg-orange-500",
-  DELIVERED: "bg-green-600 text-white hover:bg-green-600",
-  CANCELLED: "bg-red-600 text-white hover:bg-red-600",
-};
-
 const statusMessages: Record<OrderStatus, string> = {
-  ORDER_RECEIVED: "We have received your order!",
-  PREPARING: "Your food is being prepared...",
-  OUT_FOR_DELIVERY: "Your order is on the way!",
-  DELIVERED: "Delivered! Enjoy your meal 🎉",
+  ORDER_RECEIVED: "We have received your order.",
+  PREPARING: "Your food is being prepared.",
+  OUT_FOR_DELIVERY: "Your order is on the way.",
+  DELIVERED: "Delivered. Enjoy your meal.",
   CANCELLED: "Your order was cancelled.",
 };
 
+const activeOrderStatuses = [
+  "ORDER_RECEIVED",
+  "PREPARING",
+  "OUT_FOR_DELIVERY",
+  "DELIVERED",
+] satisfies readonly OrderStatus[];
+
 export function OrderStatusTracker({ status }: OrderStatusTrackerProps) {
+  const currentIndex =
+    status === "CANCELLED" ? -1 : activeOrderStatuses.indexOf(status);
+
   return (
-    <div className="space-y-3 text-center">
+    <div className="space-y-5 text-center">
       <Badge
-        className={cn("px-4 py-2 text-base font-semibold", statusBadgeClasses[status])}
-        variant={status === "CANCELLED" ? "destructive" : "default"}
+        className="px-4 py-2 text-sm"
+        variant={
+          status === "CANCELLED"
+            ? "destructive"
+            : status === "DELIVERED"
+              ? "success"
+              : "default"
+        }
       >
         {orderStatusLabels[status]}
       </Badge>
-      <p className="text-sm text-muted-foreground">{statusMessages[status]}</p>
+      <p className="text-sm leading-6 text-muted-foreground">{statusMessages[status]}</p>
+
+      {status !== "CANCELLED" ? (
+        <div className="grid grid-cols-4 gap-2 text-left">
+          {activeOrderStatuses.map((step, index) => {
+            const isComplete = index <= currentIndex;
+
+            return (
+              <div key={step} className="space-y-2">
+                <div
+                  className={cn(
+                    "h-2 rounded-full transition-colors",
+                    isComplete ? "bg-primary" : "bg-muted",
+                  )}
+                />
+                <p
+                  className={cn(
+                    "text-xs font-medium leading-5",
+                    isComplete ? "text-foreground" : "text-muted-foreground",
+                  )}
+                >
+                  {orderStatusLabels[step]}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 }

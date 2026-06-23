@@ -19,10 +19,21 @@ const statusTransitions = [
   status: OrderStatusInput;
 }[];
 
+const scheduledOrderIds = new Set<string>();
+
 export function simulateOrderStatus(orderId: string): void {
+  if (scheduledOrderIds.has(orderId)) {
+    return;
+  }
+
+  scheduledOrderIds.add(orderId);
+
   statusTransitions.forEach(({ delayMs, status }) => {
     setTimeout(() => {
       void updateStatusIfOrderIsActive(orderId, status);
+      if (status === "DELIVERED") {
+        scheduledOrderIds.delete(orderId);
+      }
     }, delayMs);
   });
 }

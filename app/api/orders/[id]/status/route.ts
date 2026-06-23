@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
+import { jsonError, jsonOk } from "@/lib/api/responses";
 import { updateOrderStatus } from "@/lib/services/order.service";
 import { updateOrderStatusSchema } from "@/lib/validations/order.schema";
 
@@ -13,7 +14,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
 
   if (!id) {
-    return NextResponse.json({ error: "Order ID is required" }, { status: 400 });
+    return jsonError("Order ID is required", 400);
   }
 
   let body: unknown;
@@ -21,21 +22,16 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { error: "Invalid JSON request body" },
-      { status: 400 },
-    );
+    return jsonError("Invalid JSON request body", 400);
   }
 
   const parsedBody = updateOrderStatusSchema.safeParse(body);
 
   if (!parsedBody.success) {
-    return NextResponse.json(
-      {
-        error: "Invalid order status payload",
-        issues: parsedBody.error.flatten(),
-      },
-      { status: 400 },
+    return jsonError(
+      "Invalid order status payload",
+      400,
+      parsedBody.error.flatten(),
     );
   }
 
@@ -43,16 +39,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const order = await updateOrderStatus(id, parsedBody.data.status);
 
     if (!order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+      return jsonError("Order not found", 404);
     }
 
-    return NextResponse.json(order, { status: 200 });
+    return jsonOk(order);
   } catch (error: unknown) {
     console.error("Failed to update order status", error);
 
-    return NextResponse.json(
-      { error: "Failed to update order status" },
-      { status: 500 },
-    );
+    return jsonError("Failed to update order status", 500);
   }
 }

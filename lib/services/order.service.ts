@@ -1,5 +1,12 @@
-import { Prisma } from "@/app/generated/prisma/client";
-import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/app/generated/prisma/client";
+import {
+  createDemoOrder,
+  getDemoOrderById,
+  updateDemoOrderStatus,
+} from "@/lib/data/demo-orders";
+import { getPrismaClient } from "@/lib/prisma";
+import { isDemoDataEnabled, shouldUseDemoData } from "@/lib/services/demo-fallback";
+import { MenuItemUnavailableError } from "@/lib/services/order-errors";
 import type { CreateOrderInput, OrderStatusInput, OrderWithItems } from "@/types/order";
 
 const orderWithItemsInclude = {
@@ -10,14 +17,33 @@ const orderWithItemsInclude = {
   },
 } satisfies Prisma.OrderInclude;
 
-export class MenuItemUnavailableError extends Error {
-  constructor() {
-    super("One or more menu items do not exist or are unavailable");
-    this.name = "MenuItemUnavailableError";
+export async function createOrder(data: CreateOrderInput): Promise<OrderWithItems> {
+  try {
+    const order = await createDatabaseOrder(data);
+    await startStatusSimulation(order.id);
+
+    return order;
+  } catch (error: unknown) {
+    if (error instanceof MenuItemUnavailableError && isDemoDataEnabled()) {
+      const order = createDemoOrder(data);
+      await startStatusSimulation(order.id);
+
+      return order;
+    }
+
+    if (shouldUseDemoData(error, "create order")) {
+      const order = createDemoOrder(data);
+      await startStatusSimulation(order.id);
+
+      return order;
+    }
+
+    throw error;
   }
 }
 
-export async function createOrder(data: CreateOrderInput): Promise<OrderWithItems> {
+async function createDatabaseOrder(data: CreateOrderInput): Promise<OrderWithItems> {
+  const prisma = getPrismaClient();
   const order = await prisma.$transaction(async (tx) => {
     const uniqueMenuItemIds = [...new Set(data.items.map((item) => item.menuItemId))];
 
@@ -73,49 +99,73 @@ export async function createOrder(data: CreateOrderInput): Promise<OrderWithItem
     });
   });
 
-  try {
-    const { simulateOrderStatus } = await import("@/lib/status-simulator");
-    simulateOrderStatus(order.id);
-  } catch (error: unknown) {
-    console.error(`Failed to start status simulation for order ${order.id}`, error);
-  }
-
   return order;
 }
 
+async function startStatusSimulation(orderId: string): Promise<void> {
+  try {
+    const { simulateOrderStatus } = await import("@/lib/status-simulator");
+    simulateOrderStatus(orderId);
+  } catch (error: unknown) {
+    console.error(`Failed to start status simulation for order ${orderId}`, error);
+  }
+}
+
 export async function getOrderById(id: string): Promise<OrderWithItems | null> {
-  return prisma.order.findUnique({
-    where: {
-      id,
-    },
-    include: orderWithItemsInclude,
-  });
+  try {
+    const prisma = getPrismaClient();
+    const order = await prisma.order.findUnique({
+      where: {
+        id,
+      },
+      include: orderWithItemsInclude,
+    });
+
+    return order ?? (isDemoDataEnabled() ? getDemoOrderById(id) : null);
+  } catch (error: unknown) {
+    if (shouldUseDemoData(error, "fetch order")) {
+      return getDemoOrderById(id);
+    }
+
+    throw error;
+  }
 }
 
 export async function updateOrderStatus(
   id: string,
   status: OrderStatusInput,
 ): Promise<OrderWithItems | null> {
-  const existingOrder = await prisma.order.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      id: true,
-    },
-  });
+  try {
+    const prisma = getPrismaClient();
+    const existingOrder = await prisma.order.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+      },
+    });
 
-  if (!existingOrder) {
-    return null;
+    if (!existingOrder) {
+      return isDemoDataEnabled() ? updateDemoOrderStatus(id, status) : null;
+    }
+
+    return prisma.order.update({
+      where: {
+        id,
+      },
+      data: {
+        status,
+      },
+      include: orderWithItemsInclude,
+    });
+  } catch (error: unknown) {
+    if (shouldUseDemoData(error, "update order status")) {
+      return updateDemoOrderStatus(id, status);
+    }
+
+    throw error;
   }
-
-  return prisma.order.update({
-    where: {
-      id,
-    },
-    data: {
-      status,
-    },
-    include: orderWithItemsInclude,
-  });
 }
+
+export { MenuItemUnavailableError };

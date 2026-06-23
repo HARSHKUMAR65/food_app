@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FoodApp",
-  description: "Food order management app",
+  title: "FoodApp | Fresh food delivery",
+  description: "Modern food ordering and delivery experience",
 };
 
 export default function RootLayout({
@@ -28,9 +28,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-gray-50">
+      <body className="min-h-full bg-background">
         <AppHeader />
-        <main className="min-h-screen bg-gray-50 py-6">{children}</main>
+        <main className="min-h-screen py-6 sm:py-8">{children}</main>
       </body>
     </html>
   );

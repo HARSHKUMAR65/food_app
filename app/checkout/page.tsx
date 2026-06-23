@@ -1,6 +1,6 @@
 import { CheckoutForm } from "@/components/checkout/checkout-form";
 import { OrderFlowShell } from "@/components/layout/order-flow-shell";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function CheckoutPage() {
   return (
@@ -11,7 +11,13 @@ export default function CheckoutPage() {
       eyebrow="Step 2 of 3"
       title="Delivery details"
     >
-      <Card>
+      <Card className="mx-auto w-full max-w-2xl">
+        <CardHeader>
+          <CardTitle>Contact and address</CardTitle>
+          <CardDescription>
+            We will send updates to this phone number and deliver to this address.
+          </CardDescription>
+        </CardHeader>
         <CardContent>
           <CheckoutForm />
         </CardContent>

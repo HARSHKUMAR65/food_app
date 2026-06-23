@@ -18,8 +18,8 @@ export function CartItem({ item }: CartItemProps) {
   const removeItem = useCartStore((state) => state.removeItem);
 
   return (
-    <div className="grid gap-4 rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md sm:grid-cols-[128px_1fr_auto]">
-      <div className="relative h-36 w-full overflow-hidden rounded-lg bg-muted sm:h-32">
+    <div className="grid gap-4 rounded-lg border bg-card p-4 shadow-[var(--shadow-card)] sm:grid-cols-[120px_minmax(0,1fr)_auto]">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-muted sm:aspect-square">
         <Image
           fill
           unoptimized
@@ -32,29 +32,29 @@ export function CartItem({ item }: CartItemProps) {
 
       <div className="flex min-w-0 flex-col justify-between gap-4">
         <div className="space-y-1">
-          <h2 className="truncate text-base font-semibold">{item.name}</h2>
-          <p className="text-sm text-muted-foreground">Freshly prepared food item</p>
+          <h2 className="truncate text-base font-semibold tracking-tight">{item.name}</h2>
+          <p className="text-sm leading-6 text-muted-foreground">
+            Freshly prepared food item
+          </p>
           <p className="text-sm font-medium">{formatCurrency(item.price)} each</p>
         </div>
 
         <div className="flex items-center gap-2">
           <Button
             aria-label={`Decrease ${item.name} quantity`}
-            className="size-8"
-            size="icon"
+            size="icon-sm"
             type="button"
             variant="outline"
             onClick={() => decreaseQuantity(item.id)}
           >
             <Minus />
           </Button>
-          <span className="min-w-10 rounded-md border bg-background px-3 py-1 text-center text-sm font-medium">
+          <span className="min-w-10 rounded-md border bg-background px-3 py-1.5 text-center text-sm font-semibold">
             {item.quantity}
           </span>
           <Button
             aria-label={`Increase ${item.name} quantity`}
-            className="size-8"
-            size="icon"
+            size="icon-sm"
             type="button"
             variant="outline"
             onClick={() => increaseQuantity(item.id)}
