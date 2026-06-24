@@ -6,42 +6,9 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 
 const {
-  createMenuItemSchema,
-  createMenuItemRequestSchema,
-} = require("../lib/validations/menu.schema.ts");
-const {
   createOrderSchema,
   updateOrderStatusSchema,
 } = require("../lib/validations/order.schema.ts");
-
-test("menu payload accepts bulk wrapper and defaults availability", () => {
-  const parsed = createMenuItemRequestSchema.safeParse({
-    items: [
-      {
-        name: "Paneer Bowl",
-        description: "Paneer, rice, and salad",
-        price: 299,
-        image: "https://example.com/paneer.jpg",
-      },
-    ],
-  });
-
-  assert.equal(parsed.success, true);
-  assert.equal(parsed.data.type, "bulk");
-  assert.equal(parsed.data.items[0].isAvailable, true);
-});
-
-test("menu payload rejects invalid image URLs", () => {
-  const parsed = createMenuItemSchema.safeParse({
-    name: "Paneer Bowl",
-    description: "Paneer, rice, and salad",
-    price: 299,
-    image: "not-a-url",
-  });
-
-  assert.equal(parsed.success, false);
-  assert.ok(parsed.error.flatten().fieldErrors.image);
-});
 
 test("order payload rejects invalid phone and oversized quantities", () => {
   const parsed = createOrderSchema.safeParse({

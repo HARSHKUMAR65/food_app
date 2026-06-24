@@ -16,18 +16,6 @@ enum OrderStatus {
   CANCELLED
 }
 
-model MenuItem {
-  id          String      @id @default(cuid())
-  name        String
-  description String
-  price       Int
-  image       String
-  isAvailable Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  orderItems  OrderItem[]
-}
-
 model Order {
   id              String      @id @default(cuid())
   customerName    String
@@ -43,9 +31,9 @@ model Order {
 model OrderItem {
   id         String   @id @default(cuid())
   orderId    String
+  /// Static demo menu item ID from lib/data/demo-menu.ts.
   menuItemId String
   quantity   Int
   price      Int
   order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
 }

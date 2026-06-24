@@ -1,4 +1,3 @@
-import type { CreateMenuItemInput, CreateMenuItemsInput } from "@/types/menu";
 import type { MenuItemRecord } from "@/types/models";
 
 const seedDate = new Date("2026-01-01T00:00:00.000Z");
@@ -92,25 +91,4 @@ export function findDemoMenuItems(ids: string[]): MenuItemRecord[] {
   return getDemoMenuStore().filter(
     (item) => requestedIds.has(item.id) && item.isAvailable,
   );
-}
-
-export function createDemoMenuItem(data: CreateMenuItemInput): MenuItemRecord {
-  const createdAt = new Date();
-  const item: MenuItemRecord = {
-    id: `demo-${createdAt.getTime()}-${data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-    name: data.name,
-    description: data.description,
-    price: data.price,
-    image: data.image,
-    isAvailable: data.isAvailable,
-    createdAt,
-    updatedAt: createdAt,
-  };
-
-  getDemoMenuStore().push(item);
-  return item;
-}
-
-export function createDemoMenuItems(data: CreateMenuItemsInput): MenuItemRecord[] {
-  return data.map((item) => createDemoMenuItem(item));
 }
